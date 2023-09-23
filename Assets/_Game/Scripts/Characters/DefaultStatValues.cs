@@ -5,7 +5,7 @@ using UnityEngine;
 namespace TurnBasedUnits.Characters
 {
     [Serializable]
-    public struct DefaultStatValue
+    public struct DefaultStatValues
     {
         [SerializeField] private StatType _type;
         [SerializeField] private int _start;

@@ -30,12 +30,16 @@ namespace TurnBasedUnits.Characters
     public class Perk
     {
         [SerializeField] private string _name;
+        [SerializeField] private int _id;
         [SerializeField] private PerkType _type;
         [SerializeField] private PerkEffect[] _effects;
 
         private int _duration;
 
+        public event Action<Perk> DurationEnded;
+
         public string Name => _name;
+        public int ID => _id;
         public PerkType Type => _type;
         public PerkEffect[] Effects => _effects;
         public int Duration => _duration;
@@ -48,6 +52,9 @@ namespace TurnBasedUnits.Characters
         public void DecreaseDuration()
         {
             _duration--;
+
+            if (_duration <= 0)
+                DurationEnded?.Invoke(this);
         }
     }
 }

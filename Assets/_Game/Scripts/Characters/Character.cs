@@ -3,11 +3,14 @@ using System;
 using System.Collections.Generic;
 using TurnBasedUnits.Data;
 using TurnBasedUnits.Helpers;
+using Random = UnityEngine.Random;
 
 namespace TurnBasedUnits.Characters
 {
     public class Character : MonoBehaviour
     {
+        [SerializeField] private PerksList _perksList;
+
         private CharacterStats _stats;
         private List<Perk> _perks = new List<Perk>();
 
@@ -36,24 +39,40 @@ namespace TurnBasedUnits.Characters
             _perks.Clear();
         }
 
+        public void AddRandomPerk()
+        {
+            Perk[] perks = _perksList.Perks;
+            Perk randomPerk;
+            bool contains;
+
+            do
+            {
+                contains = false;
+                randomPerk = perks[Random.Range(0, perks.Length)];
+
+                for (int i = 0; i < _perks.Count; i++)
+                {
+                    if (_perks[i].ID == randomPerk.ID)
+                    {
+                        contains = true;
+                        break;
+                    }
+                }
+            } while (contains);
+
+            AddPerk(randomPerk);
+        }
+
         public void AddPerk(Perk perk)
         {
-            _perks.Add(perk);
+            if (perk == null)
+                return;
 
-            foreach (PerkEffect effect in perk.Effects)
-            {
-                //switch (effect.Stat)
-                //{
-                //    case CharacterStat.Health:
-                //        break;
-                //    case CharacterStat.Armor:
-                //        break;
-                //    case CharacterStat.Vampirism:
-                //        break;
-                //    case CharacterStat.AttackPower:
-                //        break;
-                //}
-            }
+            _perks.Add(perk);
+            perk.SetDuration(Random.Range(1, 4));
+
+            if (perk.Type == PerkType.Passive)
+                ApplyPerkEffects(perk);
         }
 
         public void RemovePerk(Perk perk)
@@ -71,7 +90,7 @@ namespace TurnBasedUnits.Characters
             if (damage <= 0)
                 return;
 
-            TryToLeach(damage, target.Health);
+            TryToLeach(Math.Min(damage, target.Health));
             target.TakeDamage(damage);
         }
 
@@ -80,13 +99,20 @@ namespace TurnBasedUnits.Characters
             Health -= damage;
         }
 
-        private void TryToLeach(int damage, int targetHealth)
+        private void TryToLeach(int availableHealth)
         {
             if (Vampirism <= 0)
                 return;
 
-            int damageDone = Math.Min(damage, targetHealth);
-            Health += Math.Min(damageDone, Vampirism);
+            Health += Math.Min(availableHealth, Vampirism);
+        }
+
+        private void ApplyPerkEffects(Perk perk)
+        {
+            for (int i = 0; i < perk.Effects.Length; i++)
+            {
+
+            }
         }
     }
 }

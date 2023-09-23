@@ -6,8 +6,8 @@ namespace TurnBasedUnits.Data
     [CreateAssetMenu(fileName = "NewDefaultStats", menuName = "Default Stats", order = 52)]
     public class DefaultStats : ScriptableObject
     {
-        [SerializeField] private DefaultStatValue[] _values;
+        [SerializeField] private DefaultStatValues[] _values;
 
-        public DefaultStatValue[] Values => _values;
+        public DefaultStatValues[] Values => _values;
     }
 }
