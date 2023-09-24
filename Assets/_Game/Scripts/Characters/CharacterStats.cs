@@ -12,10 +12,13 @@ namespace TurnBasedUnits.Characters
 
         private Dictionary<StatType, int> _stats;
 
-        //public event Action 
+        public event Action<StatType, int> StatChanged;
+        public event Action HealthWasted;
 
         public void Init()
         {
+            _stats = new Dictionary<StatType, int>();
+
             for (int i = 0; i < _defaultStats.Values.Length; i++)
             {
                 DefaultStatValues defaultValues = _defaultStats.Values[i];
@@ -35,11 +38,19 @@ namespace TurnBasedUnits.Characters
             throw new Exception($"Character stats don't contain {type}");
         }
 
-        public void SetStat(StatType type, int value)
+        public void ChangeStat(StatType type, int value)
         {
             if (_stats.ContainsKey(type))
             {
-                _stats[type] = Clamp(type, value);
+                int newValue = _stats[type] + value;
+                newValue = Clamp(type, newValue);
+                _stats[type] = newValue;
+
+                if (type != StatType.AttackPower)
+                    StatChanged?.Invoke(type, newValue);
+                if (type == StatType.Health && newValue <= 0)
+                    HealthWasted?.Invoke();
+
                 return;
             }
 

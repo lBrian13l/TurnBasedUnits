@@ -7,25 +7,23 @@ namespace TurnBasedUnits.UI
 {
     public class CharacterUiPlate : MonoBehaviour
     {
+        [SerializeField] private CharacterType _type;
         [SerializeField] private Button _attackButton;
         [SerializeField] private Button _buffButton;
         [SerializeField] private UiPerkSlot[] _perkSlots;
         [SerializeField] private StatPlate _statPlate;
 
-        private int _id;
+        public event Action AttackButtonClicked;
+        public event Action BuffButtonClicked;
 
-        public event Action<int> AttackButtonClicked;
-        public event Action<int> BuffButtonClicked;
-
+        public CharacterType Type => _type;
         public int PerkSlotsCount => _perkSlots.Length;
-        public int ID => _id;
 
-        public void Init(int id)
+        public void Init()
         {
             _attackButton.onClick.AddListener(OnAttackButtonClicked);
             _buffButton.onClick.AddListener(OnBuffButtonClicked);
             _statPlate.Init();
-            _id = id;
         }
 
         public void UpdatePerkSlot(int index, string name, int value)
@@ -40,12 +38,12 @@ namespace TurnBasedUnits.UI
 
         private void OnAttackButtonClicked()
         {
-            AttackButtonClicked?.Invoke(ID);
+            AttackButtonClicked?.Invoke();
         }
 
         private void OnBuffButtonClicked()
         {
-            BuffButtonClicked?.Invoke(ID);
+            BuffButtonClicked?.Invoke();
         }
     }
 }

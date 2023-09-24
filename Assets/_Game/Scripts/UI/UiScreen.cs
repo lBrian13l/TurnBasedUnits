@@ -8,12 +8,23 @@ namespace TurnBasedUnits.UI
         [SerializeField] private RoundsCounter _roundsCounter;
         [SerializeField] private CharacterUiPlate[] _characterUiPlates;
 
-        public void Init(int[] characterIDs)
+        public void Init()
         {
             _roundsCounter.Init();
 
-            for (int i = 0; i < _characterUiPlates.Length && i < characterIDs.Length; i++)
-                _characterUiPlates[i].Init(characterIDs[i]);
+            for (int i = 0; i < _characterUiPlates.Length; i++)
+                _characterUiPlates[i].Init();
+        }
+
+        public CharacterUiPlate GetCharacterUiPlate(CharacterType type)
+        {
+            foreach (CharacterUiPlate characterUiPlate in _characterUiPlates)
+            {
+                if (characterUiPlate.Type == type)
+                    return characterUiPlate;
+            }
+
+            return null;
         }
 
         public void OnTurnEnded(int nextCharacterID)
@@ -45,24 +56,5 @@ namespace TurnBasedUnits.UI
         //            characterUiPlate.upda
         //    }
         //}
-
-        public void OnStatChanged(int id, StatType type, int newValue)
-        {
-            CharacterUiPlate characterUiPlate = GetCharacterUiPlate(id);
-
-            if (characterUiPlate != null)
-                characterUiPlate.OnStatChanged(type, newValue);
-        }
-
-        private CharacterUiPlate GetCharacterUiPlate(int id)
-        {
-            foreach (CharacterUiPlate characterUiPlate in _characterUiPlates)
-            {
-                if (characterUiPlate.ID == id)
-                    return characterUiPlate;
-            }
-
-            return null;
-        }
     }
 }

@@ -1,7 +1,6 @@
 using UnityEngine;
 using TurnBasedUnits.Characters;
 using TurnBasedUnits.UI;
-using TurnBasedUnits.Data;
 
 namespace TurnBasedUnits.Core
 {
@@ -9,7 +8,6 @@ namespace TurnBasedUnits.Core
     {
         [SerializeField] private UiScreen _uiScreen;
         [SerializeField] private Character[] _characters;
-        [SerializeField] private DefaultStats _defaultStats;
 
         private Character _controlledCharacter;
 
@@ -18,11 +16,20 @@ namespace TurnBasedUnits.Core
             Restart();
         }
 
+        private void Init()
+        {
+            foreach (Character character in _characters)
+            {
+                CharacterUiPlate characterUiPlate = _uiScreen.GetCharacterUiPlate(character.Type);
+                
+            }
+        }
+
         private void Restart()
         {
             for (int i = 0; i < _characters.Length; i++)
             {
-                _characters[i].Init(_defaultStats, i);
+                _characters[i].Init();
             }
 
             if (_characters.Length > 0)
@@ -33,21 +40,6 @@ namespace TurnBasedUnits.Core
         {
             if (character != null)
                 _controlledCharacter = character;
-        }
-
-        private void UpdatePerkSlots()
-        {
-            //foreach (Character character in _characters)
-            //{
-            //    int i = 0;
-            //    int maxIndex = _uiScreen.GetMaxPerkSlots(character.ID);
-
-            //    for (; i < maxIndex; i++)
-            //    {
-            //        if (i < _characters.Length)
-            //            _uiScreen.UpdatePerks()
-            //    }
-            //}
         }
     }
 }

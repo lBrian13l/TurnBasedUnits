@@ -36,6 +36,7 @@ namespace TurnBasedUnits.Characters
 
         private int _duration;
 
+        public event Action<int, string, int> DurationChanged;
         public event Action<Perk> DurationEnded;
 
         public string Name => _name;
@@ -52,6 +53,7 @@ namespace TurnBasedUnits.Characters
         public void DecreaseDuration()
         {
             _duration--;
+            DurationChanged?.Invoke(_id, _name, _duration);
 
             if (_duration <= 0)
                 DurationEnded?.Invoke(this);
