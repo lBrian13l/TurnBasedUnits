@@ -2,27 +2,29 @@ using System.Collections.Generic;
 using TurnBasedUnits.Helpers;
 using TurnBasedUnits.Data;
 using System;
+using UnityEngine;
 
 namespace TurnBasedUnits.Characters
 {
-    public class CharacterStats
+    public class CharacterStats : MonoBehaviour
     {
-        private Dictionary<StatType, int> _stats;
-        private DefaultStats _defaultStats;
+        [SerializeField] private DefaultStats _defaultStats;
 
-        public CharacterStats(DefaultStats defaultStats)
+        private Dictionary<StatType, int> _stats;
+
+        //public event Action 
+
+        public void Init()
         {
-            for (int i = 0; i < defaultStats.Values.Length; i++)
+            for (int i = 0; i < _defaultStats.Values.Length; i++)
             {
-                DefaultStatValues defaultValues = defaultStats.Values[i];
+                DefaultStatValues defaultValues = _defaultStats.Values[i];
 
                 if (_stats.ContainsKey(defaultValues.Type))
                     continue;
 
                 _stats.Add(defaultValues.Type, defaultValues.Start);
             }
-
-            _defaultStats = defaultStats;
         }
 
         public int GetStat(StatType type)
@@ -37,21 +39,27 @@ namespace TurnBasedUnits.Characters
         {
             if (_stats.ContainsKey(type))
             {
-                int min = GetMinValue(type);
-                int max = GetMaxValue(type);
-                _stats[type] = Math.Clamp(value, min, max);
+                _stats[type] = Clamp(type, value);
                 return;
             }
 
             throw new Exception($"Character stats don't contain {type}");
         }
 
-        //public int GetViableValue(StatType type, int effectValue)
-        //{
-        //    int currentStatValue = GetStat(type);
-        //    int changedValue = currentStatValue + effectValue;
-        //    int viableValue = 
-        //}
+        public int GetViableValue(StatType type, int effect)
+        {
+            int currentStat = GetStat(type);
+            int supposed = currentStat + effect;
+            int overcap = supposed - Clamp(type, supposed);
+            return effect - overcap;
+        }
+
+        private int Clamp(StatType type, int value)
+        {
+            int min = GetMinValue(type);
+            int max = GetMaxValue(type);
+            return Math.Clamp(value, min, max);
+        }
 
         private int GetMinValue(StatType type)
         {

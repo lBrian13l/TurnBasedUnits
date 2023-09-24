@@ -20,9 +20,9 @@ namespace TurnBasedUnits.Core
 
         private void Restart()
         {
-            foreach (Character character in _characters)
+            for (int i = 0; i < _characters.Length; i++)
             {
-                character.Init(_defaultStats);
+                _characters[i].Init(_defaultStats, i);
             }
 
             if (_characters.Length > 0)
@@ -33,6 +33,21 @@ namespace TurnBasedUnits.Core
         {
             if (character != null)
                 _controlledCharacter = character;
+        }
+
+        private void UpdatePerkSlots()
+        {
+            //foreach (Character character in _characters)
+            //{
+            //    int i = 0;
+            //    int maxIndex = _uiScreen.GetMaxPerkSlots(character.ID);
+
+            //    for (; i < maxIndex; i++)
+            //    {
+            //        if (i < _characters.Length)
+            //            _uiScreen.UpdatePerks()
+            //    }
+            //}
         }
     }
 }

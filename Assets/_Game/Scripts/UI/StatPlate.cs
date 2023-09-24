@@ -13,7 +13,7 @@ namespace TurnBasedUnits.UI
                 bar.Init();
         }
 
-        public void UpdateBar(int value, StatType type)
+        public void UpdateBar(StatType type, int value)
         {
             foreach (Bar bar in _bars)
             {

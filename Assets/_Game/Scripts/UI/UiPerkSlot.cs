@@ -12,9 +12,9 @@ namespace TurnBasedUnits.UI
             Clear();
         }
 
-        public void UpdateSlot(int perkID, int turnsCount)
+        public void UpdateSlot(string perkName, int turnsCount)
         {
-            
+            _buffText.text = $"{perkName} ({turnsCount})";
         }
 
         public void Clear()

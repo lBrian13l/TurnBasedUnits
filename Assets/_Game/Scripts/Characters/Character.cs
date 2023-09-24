@@ -12,7 +12,8 @@ namespace TurnBasedUnits.Characters
         [SerializeField] private PerksList _perksList;
 
         private CharacterStats _stats;
-        private List<Perk> _perks = new List<Perk>();
+        private List<Perk> _appliedPerks = new List<Perk>();
+        private int _id;
 
         public event Action Died;
 
@@ -31,12 +32,15 @@ namespace TurnBasedUnits.Characters
         public int Armor { get { return _stats.GetStat(StatType.Armor); } private set { _stats.SetStat(StatType.Armor, value); } }
         public int Vampirism { get { return _stats.GetStat(StatType.Vampirism); } private set { _stats.SetStat(StatType.Vampirism, value); } }
         public int AttackPower { get { return _stats.GetStat(StatType.AttackPower); } private set { _stats.SetStat(StatType.AttackPower, value); } }
-        public int PerksCount => _perks.Count;
+        public int PerksCount => _appliedPerks.Count;
+        public List<Perk> Perks => _appliedPerks;
+        public int ID => _id;
 
-        public void Init(DefaultStats defaultStats)
+        public void Init(DefaultStats defaultStats, int id)
         {
-            _stats = new CharacterStats(defaultStats);
-            _perks.Clear();
+            //_stats = new CharacterStats(defaultStats);
+            _appliedPerks.Clear();
+            _id = id;
         }
 
         public void AddRandomPerk()
@@ -50,9 +54,9 @@ namespace TurnBasedUnits.Characters
                 contains = false;
                 randomPerk = perks[Random.Range(0, perks.Length)];
 
-                for (int i = 0; i < _perks.Count; i++)
+                for (int i = 0; i < _appliedPerks.Count; i++)
                 {
-                    if (_perks[i].ID == randomPerk.ID)
+                    if (_appliedPerks[i].ID == randomPerk.ID)
                     {
                         contains = true;
                         break;
@@ -68,19 +72,12 @@ namespace TurnBasedUnits.Characters
             if (perk == null)
                 return;
 
-            _perks.Add(perk);
+            _appliedPerks.Add((Perk)perk.Clone());
             perk.SetDuration(Random.Range(1, 4));
+            perk.DurationEnded += RemovePerk;
 
-            if (perk.Type == PerkType.Passive)
+            if (perk.Type == PerkType.Defensive)
                 ApplyPerkEffects(perk);
-        }
-
-        public void RemovePerk(Perk perk)
-        {
-            if (_perks.Contains(perk))
-            {
-
-            }
         }
 
         public void Attack(Character target)
@@ -107,11 +104,72 @@ namespace TurnBasedUnits.Characters
             Health += Math.Min(availableHealth, Vampirism);
         }
 
+        public void RemovePerk(Perk perk)
+        {
+            if (_appliedPerks.Contains(perk))
+            {
+                _appliedPerks.Remove(perk);
+                perk.DurationEnded -= RemovePerk;
+                RemovePerkEffects(perk);
+            }
+        }
+
         private void ApplyPerkEffects(Perk perk)
         {
             for (int i = 0; i < perk.Effects.Length; i++)
             {
+                PerkEffect effect = perk.Effects[i];
+                int viableValue = _stats.GetViableValue(effect.Stat, effect.Value);
+                
+                if (effect.Value != viableValue)
+                {
+                    effect = new PerkEffect(effect.Stat, viableValue);
+                    perk.Effects[i] = effect;
+                }
 
+                switch (effect.Stat)
+                {
+                    case StatType.Health:
+                        Health += effect.Value;
+                        break;
+                    case StatType.Armor:
+                        Armor += effect.Value;
+                        break;
+                    case StatType.Vampirism:
+                        Vampirism += effect.Value;
+                        break;
+                    case StatType.AttackPower:
+                        AttackPower += effect.Value;
+                        break;
+                }
+            }
+        }
+
+        private void RemovePerkEffects(Perk perk)
+        {
+            for (int i = 0; i < perk.Effects.Length; i++)
+            {
+                PerkEffect effect = perk.Effects[i];
+                int viableValue = _stats.GetViableValue(effect.Stat, effect.Value);
+
+                if (effect.Value != viableValue)
+                    effect = new PerkEffect(effect.Stat, viableValue);
+
+                switch (effect.Stat)
+                {
+                    case StatType.Health:
+                        Health -= effect.Value;
+                        break;
+                    case StatType.Armor:
+                        Armor -= effect.Value;
+                        break;
+                    case StatType.Vampirism:
+                        Vampirism -= effect.Value;
+                        break;
+                    case StatType.AttackPower:
+                        AttackPower -= effect.Value;
+                        break;
+                }
             }
         }
     }

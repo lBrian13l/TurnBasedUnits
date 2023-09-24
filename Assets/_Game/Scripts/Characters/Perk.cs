@@ -6,8 +6,8 @@ namespace TurnBasedUnits.Characters
 {
     public enum PerkType
     {
-        Passive,
-        Active
+        Defensive,
+        Offensive
     }
 
     [Serializable]
@@ -27,7 +27,7 @@ namespace TurnBasedUnits.Characters
     }
 
     [Serializable]
-    public class Perk
+    public class Perk : ICloneable
     {
         [SerializeField] private string _name;
         [SerializeField] private int _id;
@@ -55,6 +55,11 @@ namespace TurnBasedUnits.Characters
 
             if (_duration <= 0)
                 DurationEnded?.Invoke(this);
+        }
+
+        public object Clone()
+        {
+            return MemberwiseClone();
         }
     }
 }

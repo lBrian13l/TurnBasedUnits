@@ -9,6 +9,7 @@ namespace TurnBasedUnits.UI
     {
         [SerializeField] private Button _attackButton;
         [SerializeField] private Button _buffButton;
+        [SerializeField] private UiPerkSlot[] _perkSlots;
         [SerializeField] private StatPlate _statPlate;
 
         private int _id;
@@ -16,6 +17,7 @@ namespace TurnBasedUnits.UI
         public event Action<int> AttackButtonClicked;
         public event Action<int> BuffButtonClicked;
 
+        public int PerkSlotsCount => _perkSlots.Length;
         public int ID => _id;
 
         public void Init(int id)
@@ -26,9 +28,14 @@ namespace TurnBasedUnits.UI
             _id = id;
         }
 
-        public void OnStatChanged(int newValue, StatType type)
+        public void UpdatePerkSlot(int index, string name, int value)
         {
-            _statPlate.UpdateBar(newValue, type);
+
+        }
+
+        public void OnStatChanged(StatType type, int newValue)
+        {
+            _statPlate.UpdateBar(type, newValue);
         }
 
         private void OnAttackButtonClicked()

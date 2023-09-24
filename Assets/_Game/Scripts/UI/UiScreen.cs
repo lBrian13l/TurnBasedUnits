@@ -26,12 +26,32 @@ namespace TurnBasedUnits.UI
             _roundsCounter.UpdateUi(newValue);
         }
 
-        public void OnStatChanged(int newValue, StatType type, int id)
+        //public int GetMaxPerkSlots()
+        //{
+        //    foreach (CharacterUiPlate characterUiPlate in _characterUiPlates)
+        //    {
+        //        if (characterUiPlate.PerkSlotsCount > maxSlots)
+        //            maxSlots = characterUiPlate.PerkSlotsCount;
+        //    }
+
+        //    return maxSlots;
+        //}
+
+        //public void UpdatePerks(int id, string name, int turnsCount)
+        //{
+        //    for (int <)
+        //    {
+        //        if (id == characterUiPlate.ID)
+        //            characterUiPlate.upda
+        //    }
+        //}
+
+        public void OnStatChanged(int id, StatType type, int newValue)
         {
             CharacterUiPlate characterUiPlate = GetCharacterUiPlate(id);
 
             if (characterUiPlate != null)
-                characterUiPlate.OnStatChanged(newValue, type);
+                characterUiPlate.OnStatChanged(type, newValue);
         }
 
         private CharacterUiPlate GetCharacterUiPlate(int id)
