@@ -27,7 +27,7 @@ namespace TurnBasedUnits.Characters
     }
 
     [Serializable]
-    public class Perk : ICloneable
+    public class Perk
     {
         [SerializeField] private string _name;
         [SerializeField] private int _id;
@@ -57,11 +57,6 @@ namespace TurnBasedUnits.Characters
 
             if (_duration <= 0)
                 DurationEnded?.Invoke(this);
-        }
-
-        public object Clone()
-        {
-            return MemberwiseClone();
         }
     }
 }

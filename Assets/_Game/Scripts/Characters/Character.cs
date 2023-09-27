@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using TurnBasedUnits.Helpers;
+using System.Collections.Generic;
 
 namespace TurnBasedUnits.Characters
 {
@@ -9,11 +10,14 @@ namespace TurnBasedUnits.Characters
         [SerializeField] private CharacterType _type;
         [SerializeField] private CharacterStats _stats;
         [SerializeField] private CharacterPerks _perks;
+        [SerializeField] MeshRenderer _renderer;
         [SerializeField] private Character _target;
 
         public event Action Died;
 
         public CharacterType Type => _type;
+        public CharacterStats Stats => _stats;
+        public CharacterPerks Perks => _perks;
         public int Health => _stats.GetStat(StatType.Health);
         public int Armor => _stats.GetStat(StatType.Armor);
         public int Vampirism => _stats.GetStat(StatType.Vampirism);
@@ -21,32 +25,46 @@ namespace TurnBasedUnits.Characters
 
         public void Init()
         {
-            _stats.Init();
             _stats.HealthWasted += OnHealthWasted;
+            _perks.PerkAdded += _stats.AddBuff;
+            _perks.PerkRemoved += _stats.RemoveBuff;
+        }
+
+        public void Restart()
+        {
+            _stats.Init();
         }
 
         public void Attack(Character target)
         {
-            int damage = AttackPower - target.Armor;
-
-            if (damage <= 0)
-                return;
-
-            TryToLeach(Math.Min(damage, target.Health));
-            target.TakeDamage(damage);
+            int damage = (int)Mathf.Round(AttackPower / 100f * (100f - target.Armor));
+            TryToLeech(Math.Min(damage, target.Health));
+            List<Perk> offensivePerks = _perks.GetOffensivePerks();
+            target.TakeDamage(damage, offensivePerks);
         }
 
-        public void TakeDamage(int damage)
+        public void TakeDamage(int damage, List<Perk> offensivePerks)
         {
-            _stats.ChangeStat(StatType.Health, -damage);
+            _stats.ChangeStat(StatType.Health, Health - damage);
+
+            foreach (Perk perk in offensivePerks)
+            {
+                _stats.ApplyDebuff(perk);
+            }
         }
 
-        private void TryToLeach(int availableHealth)
+        private void PlayDamageEffect()
+        {
+
+        }
+
+        private void TryToLeech(int availableHealth)
         {
             if (Vampirism <= 0)
                 return;
 
-            _stats.ChangeStat(StatType.Health, Math.Min(availableHealth, Vampirism));
+            int leechedHealth = (int)Mathf.Round(availableHealth / 100 * Vampirism);
+            _stats.ChangeStat(StatType.Health, Health + leechedHealth);
         }
 
         private void OnHealthWasted() => Died?.Invoke();

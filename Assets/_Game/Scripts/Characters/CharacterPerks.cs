@@ -1,7 +1,8 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TurnBasedUnits.Data;
+using System;
+using Random = UnityEngine.Random;
 
 namespace TurnBasedUnits.Characters
 {
@@ -11,12 +12,15 @@ namespace TurnBasedUnits.Characters
 
         private List<Perk> _appliedPerks;
 
+        public event Action<Perk> PerkAdded;
+        public event Action<Perk> PerkRemoved;
+
         public void Init()
         {
             _appliedPerks = new List<Perk>();
         }
 
-        private void AddRandomPerk()
+        public void AddRandomPerk()
         {
             Perk[] perks = _perksList.Perks;
             Perk randomPerk;
@@ -40,34 +44,30 @@ namespace TurnBasedUnits.Characters
             AddPerk(randomPerk);
         }
 
+        public List<Perk> GetOffensivePerks()
+        {
+            List<Perk> offensivePerks = new List<Perk>();
+
+            foreach (Perk perk in _appliedPerks)
+            {
+                if (perk.Type == PerkType.Offensive)
+                    offensivePerks.Add(perk);
+            }
+
+            return offensivePerks;
+        }
+
         private void AddPerk(Perk perk)
         {
             if (perk == null)
                 return;
 
-            _appliedPerks.Add((Perk)perk.Clone());
+            _appliedPerks.Add(perk);
             perk.SetDuration(Random.Range(1, 4));
             perk.DurationEnded += RemovePerk;
 
             if (perk.Type == PerkType.Defensive)
-                ApplyEffects(perk);
-        }
-
-        private void ApplyEffects(Perk perk)
-        {
-            for (int i = 0; i < perk.Effects.Length; i++)
-            {
-                PerkEffect effect = perk.Effects[i];
-                //int viableValue = _stats.GetViableValue(effect.Stat, effect.Value);
-
-                //if (effect.Value != viableValue)
-                //{
-                //    effect = new PerkEffect(effect.Stat, viableValue);
-                //    perk.Effects[i] = effect;
-                //}
-
-                //_stats.ChangeStat(effect.Stat, effect.Value);
-            }
+                PerkAdded?.Invoke(perk);
         }
 
         private void RemovePerk(Perk perk)
@@ -76,21 +76,9 @@ namespace TurnBasedUnits.Characters
             {
                 _appliedPerks.Remove(perk);
                 perk.DurationEnded -= RemovePerk;
-                RemoveEffects(perk);
-            }
-        }
 
-        private void RemoveEffects(Perk perk)
-        {
-            for (int i = 0; i < perk.Effects.Length; i++)
-            {
-                PerkEffect effect = perk.Effects[i];
-                //int viableValue = _stats.GetViableValue(effect.Stat, -effect.Value);
-
-                //if (effect.Value != viableValue)
-                //    effect = new PerkEffect(effect.Stat, viableValue);
-
-                //_stats.ChangeStat(effect.Stat, -effect.Value);
+                if (perk.Type == PerkType.Defensive)
+                    PerkRemoved?.Invoke(perk);
             }
         }
     }

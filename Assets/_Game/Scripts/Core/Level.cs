@@ -13,7 +13,7 @@ namespace TurnBasedUnits.Core
 
         void Start()
         {
-            Restart();
+            Init();
         }
 
         private void Init()
@@ -21,15 +21,19 @@ namespace TurnBasedUnits.Core
             foreach (Character character in _characters)
             {
                 CharacterUiPlate characterUiPlate = _uiScreen.GetCharacterUiPlate(character.Type);
-                
+                character.Stats.StatChanged += characterUiPlate.OnStatChanged;
+                characterUiPlate.BuffButtonClicked += character.Perks.AddRandomPerk;
+                character.Init();
             }
+
+            Restart();
         }
 
         private void Restart()
         {
             for (int i = 0; i < _characters.Length; i++)
             {
-                _characters[i].Init();
+                _characters[i].Restart();
             }
 
             if (_characters.Length > 0)

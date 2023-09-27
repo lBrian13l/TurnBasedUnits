@@ -11,6 +11,7 @@ namespace TurnBasedUnits.Characters
         [SerializeField] private DefaultStats _defaultStats;
 
         private Dictionary<StatType, int> _stats;
+        private List<StatEffects> _statEffects;
 
         public event Action<StatType, int> StatChanged;
         public event Action HealthWasted;
@@ -18,6 +19,7 @@ namespace TurnBasedUnits.Characters
         public void Init()
         {
             _stats = new Dictionary<StatType, int>();
+            _statEffects = new List<StatEffects>();
 
             for (int i = 0; i < _defaultStats.Values.Length; i++)
             {
@@ -27,6 +29,12 @@ namespace TurnBasedUnits.Characters
                     continue;
 
                 _stats.Add(defaultValues.Type, defaultValues.Start);
+
+                if (defaultValues.Type != StatType.Health)
+                {
+                    StatEffects effects = new StatEffects(defaultValues.Type, defaultValues.Start);
+                    _statEffects.Add(effects);
+                }
             }
         }
 
@@ -57,12 +65,45 @@ namespace TurnBasedUnits.Characters
             throw new Exception($"Character stats don't contain {type}");
         }
 
-        public int GetViableValue(StatType type, int effect)
+        public void AddBuff(Perk perk)
         {
-            int currentStat = GetStat(type);
-            int supposed = currentStat + effect;
-            int overcap = supposed - Clamp(type, supposed);
-            return effect - overcap;
+            foreach (PerkEffect perkEffect in perk.Effects)
+            {
+                StatEffects statEffects = GetEffects(perkEffect.Stat);
+                statEffects.ApplyBuff(perkEffect.Value);
+                ChangeStat(perkEffect.Stat, statEffects.GetUpdatedValue());
+            }
+        }
+
+        public void RemoveBuff(Perk perk)
+        {
+            foreach (PerkEffect perkEffect in perk.Effects)
+            {
+                StatEffects statEffects = GetEffects(perkEffect.Stat);
+                statEffects.RemoveBuff(perkEffect.Value);
+                ChangeStat(perkEffect.Stat, statEffects.GetUpdatedValue());
+            }
+        }
+
+        public void ApplyDebuff(Perk perk)
+        {
+            foreach (PerkEffect perkEffect in perk.Effects)
+            {
+                StatEffects statEffects = GetEffects(perkEffect.Stat);
+                statEffects.ApplyDebuff(perkEffect.Value);
+                ChangeStat(perkEffect.Stat, statEffects.GetUpdatedValue());
+            }
+        }
+
+        private StatEffects GetEffects(StatType type)
+        {
+            foreach (StatEffects effects in _statEffects)
+            {
+                if (effects.Type == type)
+                    return effects;
+            }
+
+            throw new Exception($"Stat effects don't contain {type}");
         }
 
         private int Clamp(StatType type, int value)
