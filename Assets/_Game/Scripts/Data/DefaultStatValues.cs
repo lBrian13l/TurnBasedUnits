@@ -2,7 +2,7 @@ using TurnBasedUnits.Helpers;
 using System;
 using UnityEngine;
 
-namespace TurnBasedUnits.Characters
+namespace TurnBasedUnits.Data
 {
     [Serializable]
     public struct DefaultStatValues

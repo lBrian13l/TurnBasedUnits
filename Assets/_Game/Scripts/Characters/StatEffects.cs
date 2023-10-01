@@ -16,11 +16,7 @@ namespace TurnBasedUnits.Characters
         }
 
         public StatType Type => _type;
-
-        public int GetUpdatedValue()
-        {
-            return _positiveEffect + _negativeEffect;
-        }
+        public int UpdatedValue => _positiveEffect + _negativeEffect;
 
         public void ApplyBuff(int effect)
         {
@@ -38,9 +34,6 @@ namespace TurnBasedUnits.Characters
                 _negativeEffect = Mathf.Min(_negativeEffect - effect, 0);
         }
 
-        public void ApplyDebuff(int effect)
-        {
-            _positiveEffect = Mathf.Max(_positiveEffect + effect, 0);
-        }
+        public void ApplyDebuff(int effect) => _positiveEffect = Mathf.Max(_positiveEffect + effect, 0);
     }
 }

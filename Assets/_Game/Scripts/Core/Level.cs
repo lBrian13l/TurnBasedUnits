@@ -1,6 +1,8 @@
 using UnityEngine;
 using TurnBasedUnits.Characters;
 using TurnBasedUnits.UI;
+using TurnBasedUnits.Helpers;
+using System;
 
 namespace TurnBasedUnits.Core
 {
@@ -9,7 +11,8 @@ namespace TurnBasedUnits.Core
         [SerializeField] private UiScreen _uiScreen;
         [SerializeField] private Character[] _characters;
 
-        private Character _controlledCharacter;
+        private int _roundsCount;
+        private bool _gameFinished;
 
         void Start()
         {
@@ -18,10 +21,17 @@ namespace TurnBasedUnits.Core
 
         private void Init()
         {
+            _uiScreen.Init();
+            _uiScreen.RestartButtonClicked += Restart;
+
             foreach (Character character in _characters)
             {
                 CharacterUiPlate characterUiPlate = _uiScreen.GetCharacterUiPlate(character.Type);
+                character.Died += OnCharacterDied;
+                character.Attacked += EndTurn;
                 character.Stats.StatChanged += characterUiPlate.OnStatChanged;
+                character.Perks.PerkDurationChanged += characterUiPlate.OnPerkDurationChanged;
+                characterUiPlate.AttackButtonClicked += character.Attack;
                 characterUiPlate.BuffButtonClicked += character.Perks.AddRandomPerk;
                 character.Init();
             }
@@ -31,19 +41,48 @@ namespace TurnBasedUnits.Core
 
         private void Restart()
         {
-            for (int i = 0; i < _characters.Length; i++)
-            {
-                _characters[i].Restart();
-            }
+            foreach (Character character in _characters)
+                character.Restart();
 
-            if (_characters.Length > 0)
-                SetControlledCharacter(_characters[0]);
+            _gameFinished = false;
+            _roundsCount = 1;
+            _uiScreen.Restart(_roundsCount);
         }
 
-        private void SetControlledCharacter(Character character)
+        private void EndTurn(CharacterType currentCharacter)
         {
-            if (character != null)
-                _controlledCharacter = character;
+            if (_gameFinished == false)
+                _uiScreen.ActivateCharacterPlate(GetNextCharacter(currentCharacter));
+        }
+
+        private CharacterType GetNextCharacter(CharacterType currentCharacter)
+        {
+            CharacterType nextCharacter = (CharacterType)(int)++currentCharacter;
+
+            if (Enum.IsDefined(typeof(CharacterType), nextCharacter))
+            {
+                return nextCharacter;
+            }
+            else
+            {
+                EndRound();
+                return CharacterType.First;
+            }
+        }
+
+        private void EndRound()
+        {
+            foreach (Character character in _characters)
+                character.OnRoundEnded();
+
+            _roundsCount++;
+            _uiScreen.OnRoundEnded(_roundsCount);
+        }
+
+        private void OnCharacterDied()
+        {
+            _gameFinished = true;
+            _uiScreen.DeactivateCharacterPlates();
         }
     }
 }

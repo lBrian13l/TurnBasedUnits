@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using TurnBasedUnits.Helpers;
 
 namespace TurnBasedUnits.UI
 {
@@ -7,19 +8,23 @@ namespace TurnBasedUnits.UI
     {
         [SerializeField] private TextMeshProUGUI _buffText;
 
-        public void Init()
-        {
-            Clear();
-        }
+        private PerkName _name;
 
-        public void UpdateSlot(string perkName, int turnsCount)
+        public PerkName Name => _name;
+
+        public void Restart() => Clear();
+
+        public void UpdateSlot(PerkName perkName, int duration)
         {
-            _buffText.text = $"{perkName} ({turnsCount})";
+            _name = perkName;
+            string uiPerkName = StringConverter.GetUiPerkName(perkName.ToString());
+            _buffText.text = $"{uiPerkName} ({duration})";
         }
 
         public void Clear()
         {
             _buffText.text = "";
+            _name = PerkName.Empty;
         }
     }
 }

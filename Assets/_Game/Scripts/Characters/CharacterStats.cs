@@ -10,29 +10,33 @@ namespace TurnBasedUnits.Characters
     {
         [SerializeField] private DefaultStats _defaultStats;
 
-        private Dictionary<StatType, int> _stats;
-        private List<StatEffects> _statEffects;
+        private Dictionary<StatType, int> _stats = new Dictionary<StatType, int>();
+        private List<StatEffects> _statEffects = new List<StatEffects>();
 
         public event Action<StatType, int> StatChanged;
         public event Action HealthWasted;
 
-        public void Init()
+        public void Restart()
         {
-            _stats = new Dictionary<StatType, int>();
-            _statEffects = new List<StatEffects>();
+            _stats.Clear();
+            _statEffects.Clear();
 
-            for (int i = 0; i < _defaultStats.Values.Length; i++)
+            foreach (DefaultStatValues defaultValues in _defaultStats.Values)
             {
-                DefaultStatValues defaultValues = _defaultStats.Values[i];
+                StatType type = defaultValues.Type;
+                int startValue = defaultValues.Start;
 
-                if (_stats.ContainsKey(defaultValues.Type))
+                if (_stats.ContainsKey(type))
                     continue;
 
-                _stats.Add(defaultValues.Type, defaultValues.Start);
+                _stats.Add(type, startValue);
 
-                if (defaultValues.Type != StatType.Health)
+                if (type != StatType.AttackPower)
+                    StatChanged?.Invoke(type, startValue);
+
+                if (type != StatType.Health)
                 {
-                    StatEffects effects = new StatEffects(defaultValues.Type, defaultValues.Start);
+                    StatEffects effects = new StatEffects(type, startValue);
                     _statEffects.Add(effects);
                 }
             }
@@ -50,13 +54,13 @@ namespace TurnBasedUnits.Characters
         {
             if (_stats.ContainsKey(type))
             {
-                int newValue = _stats[type] + value;
-                newValue = Clamp(type, newValue);
-                _stats[type] = newValue;
+                //int newValue = _stats[type] + value;
+                value = Clamp(type, value);
+                _stats[type] = value;
 
                 if (type != StatType.AttackPower)
-                    StatChanged?.Invoke(type, newValue);
-                if (type == StatType.Health && newValue <= 0)
+                    StatChanged?.Invoke(type, value);
+                if (type == StatType.Health && value <= 0)
                     HealthWasted?.Invoke();
 
                 return;
@@ -71,7 +75,7 @@ namespace TurnBasedUnits.Characters
             {
                 StatEffects statEffects = GetEffects(perkEffect.Stat);
                 statEffects.ApplyBuff(perkEffect.Value);
-                ChangeStat(perkEffect.Stat, statEffects.GetUpdatedValue());
+                ChangeStat(perkEffect.Stat, statEffects.UpdatedValue);
             }
         }
 
@@ -81,7 +85,7 @@ namespace TurnBasedUnits.Characters
             {
                 StatEffects statEffects = GetEffects(perkEffect.Stat);
                 statEffects.RemoveBuff(perkEffect.Value);
-                ChangeStat(perkEffect.Stat, statEffects.GetUpdatedValue());
+                ChangeStat(perkEffect.Stat, statEffects.UpdatedValue);
             }
         }
 
@@ -91,7 +95,7 @@ namespace TurnBasedUnits.Characters
             {
                 StatEffects statEffects = GetEffects(perkEffect.Stat);
                 statEffects.ApplyDebuff(perkEffect.Value);
-                ChangeStat(perkEffect.Stat, statEffects.GetUpdatedValue());
+                ChangeStat(perkEffect.Stat, statEffects.UpdatedValue);
             }
         }
 

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TurnBasedUnits.Data;
 using System;
+using TurnBasedUnits.Helpers;
 using Random = UnityEngine.Random;
 
 namespace TurnBasedUnits.Characters
@@ -10,14 +11,27 @@ namespace TurnBasedUnits.Characters
     {
         [SerializeField] private PerksList _perksList;
 
-        private List<Perk> _appliedPerks;
+        private List<Perk> _appliedPerks = new List<Perk>();
 
         public event Action<Perk> PerkAdded;
         public event Action<Perk> PerkRemoved;
+        public event Action<PerkName, int> PerkDurationChanged;
 
-        public void Init()
+        public void Restart()
         {
-            _appliedPerks = new List<Perk>();
+            foreach (Perk perk in _appliedPerks)
+            {
+                perk.DurationChanged -= OnDurationChanged;
+                perk.DurationEnded -= RemovePerk;
+            }
+
+            _appliedPerks.Clear();
+        }
+
+        public void OnRoundEnded()
+        {
+            for (int i = _appliedPerks.Count - 1; i >= 0; i--)
+                _appliedPerks[i].DecreaseDuration();
         }
 
         public void AddRandomPerk()
@@ -33,7 +47,7 @@ namespace TurnBasedUnits.Characters
 
                 for (int i = 0; i < _appliedPerks.Count; i++)
                 {
-                    if (_appliedPerks[i].ID == randomPerk.ID)
+                    if (_appliedPerks[i].Name == randomPerk.Name)
                     {
                         contains = true;
                         break;
@@ -57,14 +71,18 @@ namespace TurnBasedUnits.Characters
             return offensivePerks;
         }
 
+        private void OnDurationChanged(PerkName name, int duration) => PerkDurationChanged?.Invoke(name, duration);
+
         private void AddPerk(Perk perk)
         {
             if (perk == null)
                 return;
 
+            perk = (Perk)perk.Clone();
             _appliedPerks.Add(perk);
-            perk.SetDuration(Random.Range(1, 4));
+            perk.DurationChanged += OnDurationChanged;
             perk.DurationEnded += RemovePerk;
+            perk.SetDuration(Random.Range(1, 4));
 
             if (perk.Type == PerkType.Defensive)
                 PerkAdded?.Invoke(perk);
@@ -75,6 +93,7 @@ namespace TurnBasedUnits.Characters
             if (_appliedPerks.Contains(perk))
             {
                 _appliedPerks.Remove(perk);
+                perk.DurationChanged -= OnDurationChanged;
                 perk.DurationEnded -= RemovePerk;
 
                 if (perk.Type == PerkType.Defensive)

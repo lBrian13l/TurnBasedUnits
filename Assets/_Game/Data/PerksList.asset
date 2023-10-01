@@ -13,34 +13,29 @@ MonoBehaviour:
   m_Name: PerksList
   m_EditorClassIdentifier: 
   _perks:
-  - _name: Double damage
-    _id: 0
+  - _name: 1
     _type: 0
     _effects:
     - _stat: 3
       _value: 15
-  - _name: Armor self
-    _id: 1
+  - _name: 2
     _type: 0
     _effects:
     - _stat: 1
       _value: 50
-  - _name: Armor destruction
-    _id: 2
+  - _name: 3
     _type: 1
     _effects:
     - _stat: 1
       _value: -10
-  - _name: Vampirism self
-    _id: 3
+  - _name: 4
     _type: 0
     _effects:
     - _stat: 1
       _value: -25
     - _stat: 2
       _value: 50
-  - _name: Vampirism decrease
-    _id: 4
+  - _name: 5
     _type: 1
     _effects:
     - _stat: 2

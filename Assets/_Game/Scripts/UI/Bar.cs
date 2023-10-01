@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using TurnBasedUnits.Helpers;
+using DG.Tweening;
 
 namespace TurnBasedUnits.UI
 {
@@ -11,15 +12,15 @@ namespace TurnBasedUnits.UI
         [SerializeField] private TextMeshProUGUI _numericValue;
         [SerializeField] private StatType _type;
 
-        private int _maxValue = 100;
+        private float _maxValue;
 
         public StatType Type => _type;
 
-        public void Init() => UpdateUi(_maxValue);
+        public void Init(int maxValue) => _maxValue = maxValue;
 
         public void UpdateUi(int value)
         {
-            _filledImage.fillAmount = value / _maxValue;
+            _filledImage.DOFillAmount(value / _maxValue, 0.25f);
             _numericValue.text = value.ToString();
         }
     }

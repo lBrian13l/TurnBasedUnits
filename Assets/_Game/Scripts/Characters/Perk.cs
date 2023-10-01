@@ -27,36 +27,36 @@ namespace TurnBasedUnits.Characters
     }
 
     [Serializable]
-    public class Perk
+    public class Perk : ICloneable
     {
-        [SerializeField] private string _name;
-        [SerializeField] private int _id;
+        [SerializeField] private PerkName _name;
         [SerializeField] private PerkType _type;
         [SerializeField] private PerkEffect[] _effects;
 
         private int _duration;
 
-        public event Action<int, string, int> DurationChanged;
+        public event Action<PerkName, int> DurationChanged;
         public event Action<Perk> DurationEnded;
 
-        public string Name => _name;
-        public int ID => _id;
+        public PerkName Name => _name;
         public PerkType Type => _type;
         public PerkEffect[] Effects => _effects;
-        public int Duration => _duration;
 
         public void SetDuration(int duration)
         {
             _duration = duration;
+            DurationChanged?.Invoke(_name, _duration);
         }
 
         public void DecreaseDuration()
         {
             _duration--;
-            DurationChanged?.Invoke(_id, _name, _duration);
+            DurationChanged?.Invoke(_name, _duration);
 
             if (_duration <= 0)
                 DurationEnded?.Invoke(this);
         }
+
+        public object Clone() => MemberwiseClone();
     }
 }
